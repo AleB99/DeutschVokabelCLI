@@ -1,40 +1,31 @@
+from functions import (
+    clearScreen,
+    menu,
+    req,
+    createFlashCard,
+    viewFlashcards
+)
 import requests
-import subprocess
-
-def clearScreen():
-    subprocess.run(["clear"])
-
-def menu():
-    print("\nDeutschVokabelCLI\n")
-    print("Choose:")
-    print("1. Translate word (German to Italian/English)")
-    print("2. Add flashcard")
-    print("3. Exit\n")
-
-
-def req(word: str, language: str):
-    response = requests.get(
-        "https://api.mymemory.translated.net/get",
-        params = {
-            "q": word,
-            "langpair": f"de|{language}"
-        },
-        timeout = 10
-    )
-
-    response.raise_for_status()
-    data = response.json()
-
-    return data["responseData"]["translatedText"]
-
 
 while True:
-    menu()
-    num: int = int(input("Enter your choice: "))
     clearScreen()
+    menu()
+
+    try:
+        num = int(input("Enter your choice: "))
+    except ValueError:
+        print("Please enter a number.")
+        input("\nPress Enter to continue...")
+        continue
+
+    clearScreen()
+
     if num == 1:
+
         while True:
-            word = input("Enter a German word (Enter to stop): ")
+            word = input(
+                "Enter a German word (Enter to stop): "
+            ).strip().lower()
 
             if word == "":
                 break
@@ -47,15 +38,28 @@ while True:
                 print(f"Italian: {italian}")
                 print(f"English: {english}\n")
 
+                addToFCs = input(
+                    "Add this word to flashcards? (Y/n): "
+                ).strip().lower()
+
+                if addToFCs == "y":
+                    createFlashCard(word, italian, english)
+
             except requests.RequestException as e:
                 print(f"Translation error: {e}")
 
     elif num == 2:
-        print("Flashcard functionality coming soon!")
+
+        viewFlashcards()
+
+        input("\nPress Enter to continue...")
 
     elif num == 3:
-        print("Goodbye!")
+
+        print("Goodbye!")   
         break
 
     else:
-        print("Invalid choice. Try again.")
+
+        print("Invalid choice.")
+        input("\nPress Enter to continue...")
