@@ -37,9 +37,7 @@ while True:
                 print(f"Italian: {italian}")
                 print(f"English: {english}\n")
 
-                addToFCs = input(
-                    "Add this word to flashcards? (Y/n): "
-                ).strip().lower()
+                addToFCs = input("Add this word to flashcards? (Y/n): ").strip().lower()
 
                 if addToFCs == "y":
                     createFlashCard(word, italian, english)

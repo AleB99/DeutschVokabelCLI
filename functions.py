@@ -1,13 +1,30 @@
 import json
 import subprocess
-from deep_translator import GoogleTranslator
+import os
+import deepl
+from dotenv import load_dotenv
 
 FLASHCARDS_FILE = "flashcards.json"
+CONFIG_FILE = "config.json"
 
+_translator_instance = None
+def get_deepl_translator():
+    global _translator_instance
+    if _translator_instance is not None:
+        return _translator_instance
+        
+    load_dotenv()
+    api_key = os.getenv("DEEPL_API_KEY")
+        
+    if not api_key:
+        print("\nDeepL API key not found or not set.")
+        exit(1)
+            
+    _translator_instance = deepl.Translator(api_key)
+    return _translator_instance
 
 def clearScreen():
     subprocess.run(["clear"])
-
 
 def menu():
     print("\nDeutschVokabelCLI\n")
@@ -16,9 +33,11 @@ def menu():
     print("2. View flashcards")
     print("3. Exit\n")
 
-
 def req(word: str, language: str):
-    return GoogleTranslator(source='de', target=language).translate(word)
+    translator = get_deepl_translator()
+    target_lang = "IT" if language.lower() == "it" else "EN-US"
+    result = translator.translate_text(word, source_lang="DE", target_lang=target_lang)
+    return result.text
 
 
 def loadFlashcards():
