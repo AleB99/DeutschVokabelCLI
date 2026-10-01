@@ -31,7 +31,8 @@ def menu():
     print("Choose:")
     print("1. Translate word (German to Italian/English)")
     print("2. View flashcards")
-    print("3. Exit\n")
+    print("3. Remove flashcard by ID")
+    print("4. Exit\n")
 
 def req(word: str, language: str):
     translator = get_deepl_translator()
@@ -56,15 +57,20 @@ def saveFlashcards(flashcards):
 
 def createFlashCard(word: str, italian: str, english: str):
     flashcards = loadFlashcards()
+    
+    if flashcards:
+        id = max(card["id"] for card in flashcards) + 1
+    else:
+        id = 0
 
     flashcard = {
+        "id": id,
         "german": word,
         "italian": italian,
         "english": english
     }
-
+    
     flashcards.append(flashcard)
-
     saveFlashcards(flashcards)
 
     print("Flashcard added!")
@@ -80,7 +86,21 @@ def viewFlashcards():
     print("\nYour flashcards:\n")
 
     for flashcard in flashcards:
+        print(f"Id:  {flashcard['id']}")
         print(f"German:  {flashcard['german']}")
         print(f"Italian: {flashcard['italian']}")
-        print(f"English: {flashcard['english']}")
+        print(f"English: {flashcard['english']}\n")
         print("-" * 30)
+    
+def removeFlashcard(id):
+    flashcards = loadFlashcards()
+
+    for flashcard in flashcards:
+        if flashcard["id"] == id:
+            flashcards.remove(flashcard)
+            saveFlashcards(flashcards)
+            return True
+
+    return False
+    
+    

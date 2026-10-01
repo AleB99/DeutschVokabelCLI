@@ -3,7 +3,8 @@ from functions import (
     menu,
     req,
     createFlashCard,
-    viewFlashcards
+    viewFlashcards,
+    removeFlashcard
 )
 
 while True:
@@ -20,7 +21,6 @@ while True:
     clearScreen()
 
     if num == 1:
-
         while True:
             word = input(
                 "Enter a German word (Enter to stop): "
@@ -33,7 +33,6 @@ while True:
                 italian = req(word, "it")
                 english = req(word, "en")
 
-                print(f"\nGerman:  {word}")
                 print(f"Italian: {italian}")
                 print(f"English: {english}\n")
 
@@ -46,17 +45,22 @@ while True:
                 print(f"Translation error: {e}")
 
     elif num == 2:
-
         viewFlashcards()
-
         input("\nPress Enter to continue...")
 
     elif num == 3:
-
-        print("Goodbye!")   
+        try:
+            id = int(input("\nEnter the ID of the flashcard you'd like to remove: "))
+            if removeFlashcard(id):
+                print("Flashcard removed!")
+            else:
+                print("Flashcard not found.")
+        except ValueError:
+            print("Please enter a valid ID.")
+    
+    elif num == 4:
         break
 
     else:
-
         print("Invalid choice.")
         input("\nPress Enter to continue...")
