@@ -2,6 +2,7 @@ import json
 import subprocess
 import os
 import deepl
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 FLASHCARDS_FILE = "flashcards.json"
@@ -32,7 +33,8 @@ def menu():
     print("1. Translate word (German to Italian/English)")
     print("2. View flashcards")
     print("3. Remove flashcard by ID")
-    print("4. Exit\n")
+    print("4. Train")
+    print("5. Exit\n")
 
 def req(word: str, language: str):
     translator = get_deepl_translator()
@@ -67,7 +69,12 @@ def createFlashCard(word: str, italian: str, english: str):
         "id": id,
         "german": word,
         "italian": italian,
-        "english": english
+        "english": english,
+        "review": {
+        "difficulty": 0,
+        "lastReview": "",
+        "nextReview": datetime.now().date()
+    }
     }
     
     flashcards.append(flashcard)
@@ -89,7 +96,7 @@ def viewFlashcards():
         print(f"Id:  {flashcard['id']}")
         print(f"German:  {flashcard['german']}")
         print(f"Italian: {flashcard['italian']}")
-        print(f"English: {flashcard['english']}\n")
+        print(f"English: {flashcard['english']}")
         print("-" * 30)
     
 def removeFlashcard(id):
@@ -102,5 +109,61 @@ def removeFlashcard(id):
             return True
 
     return False
-    
-    
+
+reviewIntervals = {
+    1: 14,
+    2: 7,
+    3: 5,
+    4: 2,
+    5: 1
+}
+
+def getCardsToReview(flashcards):
+    today = datetime.now().date().isoformat()
+
+    cards_to_review = [
+        card for card in flashcards
+        if card["review"]["nextReview"] <= today
+    ]
+
+    cards_to_review.sort(
+        key=lambda card: card["review"]["nextReview"]
+    )
+
+    return cards_to_review
+
+
+def trainFlashcards():
+    flashcards = loadFlashcards()
+    cards_to_review = getCardsToReview(flashcards)
+
+    print(f"\nYou have {len(cards_to_review)} flashcards to review today")
+
+    today = datetime.now().date()
+
+    for flashcard in cards_to_review:
+
+        print(f"\nGerman: {flashcard['german']}")
+
+        input("Press Enter to show answer...")
+
+        print(f"Italian: {flashcard['italian']}")
+        print(f"English: {flashcard['english']}")
+
+        difficulty = int(input("\nHow difficult was it? (1-5): "))
+
+        if difficulty not in reviewIntervals:
+            print("Invalid difficulty.")
+            continue
+
+        days = reviewIntervals[difficulty]
+
+        flashcard["review"]["difficulty"] = difficulty
+        flashcard["review"]["lastReview"] = today.isoformat()
+        flashcard["review"]["nextReview"] = (
+            today + timedelta(days=days)
+        ).isoformat()
+
+    saveFlashcards(flashcards)
+
+    print("Today's review ended, good job!")

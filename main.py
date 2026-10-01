@@ -4,7 +4,8 @@ from functions import (
     req,
     createFlashCard,
     viewFlashcards,
-    removeFlashcard
+    removeFlashcard,
+    trainFlashcards
 )
 
 while True:
@@ -59,6 +60,9 @@ while True:
             print("Please enter a valid ID.")
     
     elif num == 4:
+        trainFlashcards()
+    
+    elif num == 5:
         break
 
     else:
