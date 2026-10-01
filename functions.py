@@ -73,7 +73,7 @@ def createFlashCard(word: str, italian: str, english: str):
         "review": {
         "difficulty": 0,
         "lastReview": "",
-        "nextReview": datetime.now().date()
+        "nextReview": datetime.now().date().isoformat()
     }
     }
     
@@ -121,14 +121,12 @@ reviewIntervals = {
 def getCardsToReview(flashcards):
     today = datetime.now().date().isoformat()
 
-    cards_to_review = [
-        card for card in flashcards
-        if card["review"]["nextReview"] <= today
-    ]
+    cards_to_review = []
+    for card in flashcards:
+        if card["review"]["nextReview"] <= today:
+            cards_to_review.append(card)
 
-    cards_to_review.sort(
-        key=lambda card: card["review"]["nextReview"]
-    )
+    cards_to_review.sort(key=lambda card: card["review"]["nextReview"])
 
     return cards_to_review
 
@@ -142,12 +140,9 @@ def trainFlashcards():
     today = datetime.now().date()
 
     for flashcard in cards_to_review:
-
         print(f"\nGerman: {flashcard['german']}")
-
         input("Press Enter to show answer...")
-
-        print(f"Italian: {flashcard['italian']}")
+        print(f"\nItalian: {flashcard['italian']}")
         print(f"English: {flashcard['english']}")
 
         difficulty = int(input("\nHow difficult was it? (1-5): "))
@@ -160,10 +155,6 @@ def trainFlashcards():
 
         flashcard["review"]["difficulty"] = difficulty
         flashcard["review"]["lastReview"] = today.isoformat()
-        flashcard["review"]["nextReview"] = (
-            today + timedelta(days=days)
-        ).isoformat()
+        flashcard["review"]["nextReview"] = (today + timedelta(days=days)).isoformat()
 
     saveFlashcards(flashcards)
-
-    print("Today's review ended, good job!")
