@@ -1,6 +1,6 @@
 import json
-import requests
 import subprocess
+from deep_translator import GoogleTranslator
 
 FLASHCARDS_FILE = "flashcards.json"
 
@@ -18,20 +18,7 @@ def menu():
 
 
 def req(word: str, language: str):
-    response = requests.get(
-        "https://api.mymemory.translated.net/get",
-        params={
-            "q": word,
-            "langpair": f"de|{language}"
-        },
-        timeout=10
-    )
-
-    response.raise_for_status()
-
-    data = response.json()
-
-    return data["responseData"]["translatedText"]
+    return GoogleTranslator(source='de', target=language).translate(word)
 
 
 def loadFlashcards():

@@ -5,7 +5,6 @@ from functions import (
     createFlashCard,
     viewFlashcards
 )
-import requests
 
 while True:
     clearScreen()
@@ -45,7 +44,7 @@ while True:
                 if addToFCs == "y":
                     createFlashCard(word, italian, english)
 
-            except requests.RequestException as e:
+            except Exception as e:
                 print(f"Translation error: {e}")
 
     elif num == 2:
