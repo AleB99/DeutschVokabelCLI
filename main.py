@@ -39,7 +39,7 @@ while True:
 
                 addToFCs = input("Add this word to flashcards? (Y/n): ").strip().lower()
 
-                if addToFCs == "y":
+                if addToFCs == "y" or addToFCs == "z":
                     createFlashCard(word, italian, english)
 
             except Exception as e:

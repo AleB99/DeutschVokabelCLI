@@ -115,7 +115,7 @@ reviewIntervals = {
     2: 7,
     3: 5,
     4: 2,
-    5: 1
+    5: 0
 }
 
 def getCardsToReview(flashcards):
