@@ -83,6 +83,16 @@ def createFlashCard(word: str, italian: str, english: str):
     print("Flashcard added!")
 
 
+def printExample(flashcard, translations=True):
+    example = flashcard.get("example", {})
+    if not example.get("german"):
+        return
+    print(f"Example: {example['german']}")
+    if translations:
+        print(f"         {example.get('italian', '')}")
+        print(f"         {example.get('english', '')}")
+
+
 def viewFlashcards():
     flashcards = loadFlashcards()
 
@@ -97,6 +107,7 @@ def viewFlashcards():
         print(f"German:  {flashcard['german']}")
         print(f"Italian: {flashcard['italian']}")
         print(f"English: {flashcard['english']}")
+        printExample(flashcard)
         print("-" * 30)
     
 def removeFlashcard(id):
@@ -141,15 +152,24 @@ def trainFlashcards():
 
     for flashcard in cards_to_review:
         print(f"\nGerman: {flashcard['german']}")
+        printExample(flashcard, translations=False)
         input("Press Enter to show answer...")
         print(f"\nItalian: {flashcard['italian']}")
         print(f"English: {flashcard['english']}")
+        example = flashcard.get("example", {})
+        if example.get("german"):
+            print(f"Example: {example.get('italian', '')}")
+            print(f"         {example.get('english', '')}")
 
-        difficulty = int(input("\nHow difficult was it? (1-5): "))
+        while True:
+            try:
+                difficulty = int(input("\nHow difficult was it? (1-5): "))
+            except ValueError:
+                difficulty = None
 
-        if difficulty not in reviewIntervals:
-            print("Invalid difficulty.")
-            continue
+            if difficulty in reviewIntervals:
+                break
+            print("Please enter a number from 1 to 5.")
 
         days = reviewIntervals[difficulty]
 
