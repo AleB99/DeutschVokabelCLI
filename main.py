@@ -25,7 +25,7 @@ while True:
         while True:
             word = input(
                 "Enter a German word (Enter to stop): "
-            ).strip().lower()
+            ).strip()
 
             if word == "":
                 break
@@ -39,7 +39,7 @@ while True:
 
                 addToFCs = input("Add this word to flashcards? (Y/n): ").strip().lower()
 
-                if addToFCs == "y" or addToFCs == "z":
+                if addToFCs in ("", "y", "z"):
                     createFlashCard(word, italian, english)
 
             except Exception as e:
@@ -58,9 +58,11 @@ while True:
                 print("Flashcard not found.")
         except ValueError:
             print("Please enter a valid ID.")
+        input("\nPress Enter to continue...")
     
     elif num == 4:
         trainFlashcards()
+        input("\nPress Enter to continue...")
     
     elif num == 5:
         break
