@@ -2,6 +2,7 @@ import json
 import subprocess
 import os
 import deepl
+from collections import deque
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
@@ -121,13 +122,20 @@ def removeFlashcard(id):
 
     return False
 
-reviewIntervals = {
-    1: 14,
-    2: 7,
-    3: 5,
-    4: 2,
-    5: 0
+# rating: (minimum gap in days, how much the previous gap is multiplied by)
+reviewRules = {
+    1: (7, 3.0),   # very easy
+    2: (4, 2.5),   # easy
+    3: (2, 1.5),   # medium
+    4: (1, 0),     # hard: back tomorrow
+    5: (0, 0)      # very hard: again in this session
 }
+MAX_INTERVAL = 365
+
+
+def nextInterval(previous, rating):
+    minimum, multiplier = reviewRules[rating]
+    return min(MAX_INTERVAL, max(minimum, round(previous * multiplier)))
 
 def getCardsToReview(flashcards):
     today = datetime.now().date().isoformat()
@@ -150,8 +158,12 @@ def trainFlashcards():
 
     today = datetime.now().date()
 
-    for flashcard in cards_to_review:
-        print(f"\nGerman: {flashcard['german']}")
+    queue = deque(cards_to_review)
+
+    while queue:
+        flashcard = queue.popleft()
+        print(f"\n[{len(queue) + 1} left]")
+        print(f"German: {flashcard['german']}")
         printExample(flashcard, translations=False)
         input("Press Enter to show answer...")
         print(f"\nItalian: {flashcard['italian']}")
@@ -167,14 +179,22 @@ def trainFlashcards():
             except ValueError:
                 difficulty = None
 
-            if difficulty in reviewIntervals:
+            if difficulty in reviewRules:
                 break
             print("Please enter a number from 1 to 5.")
 
-        days = reviewIntervals[difficulty]
+        review = flashcard["review"]
+        days = nextInterval(review.get("interval", 0), difficulty)
 
-        flashcard["review"]["difficulty"] = difficulty
-        flashcard["review"]["lastReview"] = today.isoformat()
-        flashcard["review"]["nextReview"] = (today + timedelta(days=days)).isoformat()
+        review["difficulty"] = difficulty
+        review["interval"] = days
+        review["lastReview"] = today.isoformat()
+        review["nextReview"] = (today + timedelta(days=days)).isoformat()
+
+        if difficulty == 5:
+            queue.append(flashcard)
+            print("This card will come back at the end of the round.")
+        else:
+            print(f"Next review in {days} day(s).")
 
     saveFlashcards(flashcards)
