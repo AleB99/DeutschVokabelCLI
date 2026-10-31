@@ -150,6 +150,17 @@ def getCardsToReview(flashcards):
     return cards_to_review
 
 
+def askDifficulty():
+    """Return a rating from 1 to 5, or None if the user wants to quit."""
+    while True:
+        answer = input("\nHow difficult was it? (1-5, q to quit): ").strip().lower()
+        if answer == "q":
+            return None
+        if answer.isdigit() and int(answer) in reviewRules:
+            return int(answer)
+        print("Please enter a number from 1 to 5, or q to quit.")
+
+
 def trainFlashcards():
     flashcards = loadFlashcards()
     cards_to_review = getCardsToReview(flashcards)
@@ -159,42 +170,49 @@ def trainFlashcards():
     today = datetime.now().date()
 
     queue = deque(cards_to_review)
+    rated = 0
 
-    while queue:
-        flashcard = queue.popleft()
-        print(f"\n[{len(queue) + 1} left]")
-        print(f"German: {flashcard['german']}")
-        printExample(flashcard, translations=False)
-        input("Press Enter to show answer...")
-        print(f"\nItalian: {flashcard['italian']}")
-        print(f"English: {flashcard['english']}")
-        example = flashcard.get("example", {})
-        if example.get("german"):
-            print(f"Example: {example.get('italian', '')}")
-            print(f"         {example.get('english', '')}")
+    try:
+        while queue:
+            flashcard = queue[0]
+            print(f"\n[{len(queue)} left]")
+            print(f"German: {flashcard['german']}")
+            printExample(flashcard, translations=False)
 
-        while True:
-            try:
-                difficulty = int(input("\nHow difficult was it? (1-5): "))
-            except ValueError:
-                difficulty = None
-
-            if difficulty in reviewRules:
+            if input("Press Enter to show answer (q to quit)... ").strip().lower() == "q":
                 break
-            print("Please enter a number from 1 to 5.")
 
-        review = flashcard["review"]
-        days = nextInterval(review.get("interval", 0), difficulty)
+            print(f"\nItalian: {flashcard['italian']}")
+            print(f"English: {flashcard['english']}")
+            example = flashcard.get("example", {})
+            if example.get("german"):
+                print(f"Example: {example.get('italian', '')}")
+                print(f"         {example.get('english', '')}")
 
-        review["difficulty"] = difficulty
-        review["interval"] = days
-        review["lastReview"] = today.isoformat()
-        review["nextReview"] = (today + timedelta(days=days)).isoformat()
+            difficulty = askDifficulty()
+            if difficulty is None:
+                break
 
-        if difficulty == 5:
-            queue.append(flashcard)
-            print("This card will come back at the end of the round.")
-        else:
-            print(f"Next review in {days} day(s).")
+            review = flashcard["review"]
+            days = nextInterval(review.get("interval", 0), difficulty)
+
+            review["difficulty"] = difficulty
+            review["interval"] = days
+            review["lastReview"] = today.isoformat()
+            review["nextReview"] = (today + timedelta(days=days)).isoformat()
+            rated += 1
+            queue.popleft()
+
+            if difficulty == 5:
+                queue.append(flashcard)
+                print("This card will come back at the end of the round.")
+            else:
+                print(f"Next review in {days} day(s).")
+
+    except (KeyboardInterrupt, EOFError):
+        print()
+
+    if queue:
+        print(f"\nTraining stopped. {rated} rating(s) saved, {len(queue)} card(s) left for later.")
 
     saveFlashcards(flashcards)
